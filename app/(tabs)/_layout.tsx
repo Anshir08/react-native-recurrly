@@ -35,7 +35,7 @@ export default function TabLayout() {
           bottom: Math.max(insets.bottom, tabBar.horizontalInset),
           height: tabBar.height,
           marginHorizontal: tabBar.horizontalInset,
-          borderRadius: tabBar.horizontalInset,
+          borderRadius: tabBar.radius,
           backgroundColor: colors.primary,
           borderTopWidth: 0,
           elevation: 0,

@@ -40,7 +40,7 @@ export const tabs: AppTab[] = [
 ];
 
 export const HOME_USER = {
-    name: "Anshir | Your Master",
+    name: "Anshir",
 };
 
 export const HOME_BALANCE = {
