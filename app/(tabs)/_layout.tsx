@@ -1,16 +1,14 @@
-import { Tabs } from "expo-router";
+import { useAuth, useUser } from "@clerk/expo";
+import { Redirect, Tabs } from "expo-router";
 import { tabs } from "@/constants/data";
-import { View, Image, type ImageSourcePropType } from "react-native";
+import { View, Image } from "react-native";
 import { colors, components } from "@/constants/theme";
 import clsx from "clsx";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { usePostHog } from "posthog-react-native";
+import { useEffect } from "react";
 
 const tabBar = components.tabBar;
-
-type TabIconProps = {
-  focused: boolean;
-  icon: ImageSourcePropType;
-};
 
 const TabIcon = ({ focused, icon }: TabIconProps) => {
   return (
@@ -24,6 +22,33 @@ const TabIcon = ({ focused, icon }: TabIconProps) => {
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
+  const { isLoaded, isSignedIn } = useAuth();
+  const { user } = useUser();
+  const posthog = usePostHog();
+
+  // Identify the signed-in Clerk user so all PostHog events are linked to them.
+  useEffect(() => {
+    if (!user) return;
+
+    // Build a props object with only defined string values; PostHog's JsonType
+    // does not accept `undefined`, so we conditionally add each property.
+    const props: Record<string, string> = {};
+    if (user.primaryEmailAddress?.emailAddress) {
+      props.email = user.primaryEmailAddress.emailAddress;
+    }
+    const displayName = user.firstName ?? user.username;
+    if (displayName) {
+      props.name = displayName;
+    }
+
+    posthog.identify(user.id, props);
+  }, [user?.id]); // re-identify only when the user ID changes
+
+  if (!isLoaded) return null;
+
+  if (!isSignedIn) {
+    return <Redirect href="/(auth)/sign-in" />;
+  }
 
   return (
     <Tabs
